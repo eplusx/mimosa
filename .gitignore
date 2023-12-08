@@ -27,3 +27,6 @@ replay_pid*
 
 # Ignore Gradle build output directory
 build
+
+# Secret files
+app/src/main/resources/secrets.config

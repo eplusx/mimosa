@@ -1,12 +1,7 @@
 package net.eplusx.logger
 
-class App {
-    val greeting: String
-        get() {
-            return "Hello World!"
-        }
-}
+import SwitchBotClient
 
 fun main() {
-    println(App().greeting)
+    println(SwitchBotClient().getDevices().body())
 }
