@@ -3,5 +3,8 @@ package net.eplusx.logger
 import SwitchBotClient
 
 fun main() {
-    println(SwitchBotClient().getDevices().body())
+    SwitchBotClient().getDevices().use { response ->
+        println("HTTP ${response.code}")
+        println(response.body!!.string())
+    }
 }
