@@ -1,10 +1,7 @@
 package net.eplusx.logger
 
-import SwitchBotClient
+import net.eplusx.logger.switchbot.SwitchBotClient
 
 fun main() {
-    SwitchBotClient().getDevices().use { response ->
-        println("HTTP ${response.code}")
-        println(response.body!!.string())
-    }
+    println(SwitchBotClient().getDevices().toJson())
 }

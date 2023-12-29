@@ -1,7 +1,10 @@
+package net.eplusx.logger.switchbot
+
 import net.eplusx.logger.Secrets
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import java.util.Base64
@@ -13,7 +16,7 @@ class SwitchBotClient {
     private val httpClient =
         OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(10)).callTimeout(Duration.ofSeconds(30)).build()
 
-    fun getDevices(): Response = httpClient.newCall(getRequest("devices")).execute()
+    fun getDevices() = DevicesResponse.fromJson(get("devices").body!!.source())
 
     private fun buildRequest(endpoint: String): Request.Builder {
         val token = Secrets.SwitchBot.token
@@ -34,4 +37,8 @@ class SwitchBotClient {
     }
 
     private fun getRequest(endpoint: String): Request = buildRequest(endpoint).get().build()
+
+    private fun get(endpoint: String): Response = httpClient.newCall(getRequest(endpoint)).execute().apply {
+        if (!isSuccessful) throw IOException("HTTP $code for $endpoint: $message")
+    }
 }
