@@ -8,6 +8,10 @@ object Secrets {
         val secret: String by lazy { props.getProperty("switchbot.secret")!! }
     }
 
+    object Nature {
+        val token: String by lazy { props.getProperty("nature.token")!!}
+    }
+
     private val props: Properties by lazy {
         Properties().apply {
             Secrets::class.java.getResourceAsStream("/secrets.config")!!.use { this.load(it) }
