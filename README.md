@@ -1,2 +1,3 @@
-# cloud-logger
-Logging library for Google Cloud Functions.
+# Mimosa
+
+Monitoring and automation tool for SwitchBot and Nature Remo.

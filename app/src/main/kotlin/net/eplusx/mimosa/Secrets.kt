@@ -1,4 +1,4 @@
-package net.eplusx.logger
+package net.eplusx.mimosa
 
 import java.util.Properties
 

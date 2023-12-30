@@ -1,6 +1,6 @@
-package net.eplusx.logger.switchbot
+package net.eplusx.mimosa.switchbot
 
-import net.eplusx.logger.Secrets
+import net.eplusx.mimosa.Secrets
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response

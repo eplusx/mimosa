@@ -5,7 +5,7 @@ plugins {
     application
 }
 
-group = "net.eplusx.logger"
+group = "net.eplusx.mimosa"
 version = "0.1.0-SNAPSHOT"
 
 repositories {
@@ -32,7 +32,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("net.eplusx.logger.AppKt")
+    mainClass.set("net.eplusx.mimosa.AppKt")
 }
 
 tasks.withType<Test>().configureEach {
@@ -43,6 +43,6 @@ tasks.withType<Test>().configureEach {
 // https://qiita.com/T45K/items/116b092960c7595884dd
 val jar by tasks.getting(Jar::class) {
     manifest {
-        attributes["Main-Class"] = "net.eplusx.logger.AppKt"
+        attributes["Main-Class"] = "net.eplusx.mimosa.AppKt"
     }
 }

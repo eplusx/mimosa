@@ -1,4 +1,4 @@
-package net.eplusx.logger.switchbot
+package net.eplusx.mimosa.switchbot
 
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
