@@ -6,9 +6,14 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 
 class SwitchBotClientTest : ShouldSpec({
+    val server = MockWebServer()
+
+    afterTest {
+        server.shutdown()
+    }
+
     context("getDevices") {
         should("return devices") {
-            val server = MockWebServer()
             server.enqueue(
                 MockResponse().setBody(
                     """
