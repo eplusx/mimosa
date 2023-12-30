@@ -57,13 +57,13 @@ data class Device(
     val deviceId: String,
     val deviceName: String,
     val deviceType: String,
-    val enableCloudService: Boolean?, // Might be missing for devices with old firmware.
+    val enableCloudService: Boolean? = null, // Might be missing for devices with old firmware.
     val hubDeviceId: String,
-    val curtainDeviceIds: List<String>?,
-    val calibrate: Boolean?,
-    val group: Boolean?,
-    val master: Boolean?,
-    val openDirection: String?,
+    val curtainDeviceIds: List<String>? = null,
+    val calibrate: Boolean? = null,
+    val group: Boolean? = null,
+    val master: Boolean? = null,
+    val openDirection: String? = null,
 )
 
 @JsonClass(generateAdapter = true)

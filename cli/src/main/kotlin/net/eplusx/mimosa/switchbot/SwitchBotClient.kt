@@ -12,9 +12,13 @@ import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-class SwitchBotClient {
+class SwitchBotClient(val endpointPrefix: String = "https://api.switch-bot.com/v1.1/") {
     private val httpClient =
         OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(10)).callTimeout(Duration.ofSeconds(30)).build()
+
+    init {
+        require(endpointPrefix.endsWith("/")) { "endpointPrefix must end with /" }
+    }
 
     fun getDevices() = DevicesResponse.fromJson(get("devices").body!!.source())
 
@@ -29,7 +33,7 @@ class SwitchBotClient {
         mac.init(secretKeySpec)
         val signature = String(Base64.getEncoder().encode(mac.doFinal(data.toByteArray())))
         return Request.Builder()
-            .url("https://api.switch-bot.com/v1.1/$endpoint")
+            .url("$endpointPrefix$endpoint")
             .header("Authorization", token)
             .header("sign", signature)
             .header("nonce", nonce)
