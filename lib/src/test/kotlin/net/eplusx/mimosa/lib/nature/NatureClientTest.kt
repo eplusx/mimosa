@@ -1,4 +1,4 @@
-package net.eplusx.mimosa.nature
+package net.eplusx.mimosa.lib.nature
 
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
@@ -30,7 +30,10 @@ class NatureClientTest : ShouldSpec({
             )
             server.start()
 
-            NatureClient(server.url("/").toString()).getDevices() shouldBeEqualToComparingFields DevicesResponse(
+            NatureClient(
+                "access_token",
+                server.url("/").toString()
+            ).getDevices() shouldBeEqualToComparingFields DevicesResponse(
                 listOf(
                     Device(
                         id = "01234567-0123-4567-89ab-09123456789ab",

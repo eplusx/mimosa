@@ -1,13 +1,15 @@
-package net.eplusx.mimosa.nature
+package net.eplusx.mimosa.lib.nature
 
-import net.eplusx.mimosa.Secrets
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 import java.time.Duration
 
-class NatureClient(private val endpointPrefix: String = "https://api.nature.global/1/") {
+class NatureClient(
+    private val accessToken: String,
+    private val endpointPrefix: String = "https://api.nature.global/1/"
+) {
     private val httpClient =
         OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(10)).callTimeout(Duration.ofSeconds(30)).build()
 
@@ -18,7 +20,7 @@ class NatureClient(private val endpointPrefix: String = "https://api.nature.glob
     fun getDevices() = DevicesResponse.fromJson(get("devices").body!!.source())
 
     private fun buildRequest(endpoint: String): Request.Builder {
-        val token = Secrets.Nature.token
+        val token = accessToken
         return Request.Builder()
             .url("$endpointPrefix$endpoint")
             .header("Authorization", "Bearer $token")

@@ -1,4 +1,4 @@
-package net.eplusx.mimosa.switchbot
+package net.eplusx.mimosa.lib.switchbot
 
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
@@ -47,7 +47,11 @@ class SwitchBotClientTest : ShouldSpec({
             )
             server.start()
 
-            SwitchBotClient(server.url("/").toString()).getDevices() shouldBeEqualToComparingFields DevicesResponse(
+            SwitchBotClient(
+                "access_token",
+                "secret",
+                server.url("/").toString()
+            ).getDevices() shouldBeEqualToComparingFields DevicesResponse(
                 statusCode = 100,
                 message = "success",
                 body = Devices(

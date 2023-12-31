@@ -1,15 +1,15 @@
-package net.eplusx.mimosa
+package net.eplusx.mimosa.cli
 
 import java.util.Properties
 
 object Secrets {
     object SwitchBot {
-        val token: String by lazy { props.getProperty("switchbot.token")!! }
+        val accessToken: String by lazy { props.getProperty("switchbot.access-token")!! }
         val secret: String by lazy { props.getProperty("switchbot.secret")!! }
     }
 
     object Nature {
-        val token: String by lazy { props.getProperty("nature.token")!!}
+        val accessToken: String by lazy { props.getProperty("nature.access-token")!!}
     }
 
     private val props: Properties by lazy {

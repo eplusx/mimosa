@@ -1,6 +1,5 @@
-package net.eplusx.mimosa.switchbot
+package net.eplusx.mimosa.lib.switchbot
 
-import net.eplusx.mimosa.Secrets
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -12,7 +11,11 @@ import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-class SwitchBotClient(private val endpointPrefix: String = "https://api.switch-bot.com/v1.1/") {
+class SwitchBotClient(
+    private val accessToken: String,
+    private val secret: String,
+    private val endpointPrefix: String = "https://api.switch-bot.com/v1.1/"
+) {
     private val httpClient =
         OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(10)).callTimeout(Duration.ofSeconds(30)).build()
 
@@ -23,8 +26,8 @@ class SwitchBotClient(private val endpointPrefix: String = "https://api.switch-b
     fun getDevices() = DevicesResponse.fromJson(get("devices").body!!.source())
 
     private fun buildRequest(endpoint: String): Request.Builder {
-        val token = Secrets.SwitchBot.token
-        val secret = Secrets.SwitchBot.secret
+        val token = accessToken
+        val secret = secret
         val nonce = UUID.randomUUID().toString()
         val time = "" + Instant.now().toEpochMilli()
         val data = token + time + nonce

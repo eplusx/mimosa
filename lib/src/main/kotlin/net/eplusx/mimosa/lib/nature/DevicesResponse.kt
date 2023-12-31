@@ -1,4 +1,4 @@
-package net.eplusx.mimosa.nature
+package net.eplusx.mimosa.lib.nature
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
