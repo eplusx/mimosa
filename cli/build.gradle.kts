@@ -1,22 +1,13 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    application
+    id("mimosa.kotlin-application-conventions")
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "net.eplusx.mimosa"
 version = "0.1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(project(":lib"))
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 application {
