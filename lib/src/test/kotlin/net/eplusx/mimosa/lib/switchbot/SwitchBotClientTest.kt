@@ -178,4 +178,48 @@ class SwitchBotClientTest : ShouldSpec({
             server.takeRequest().path shouldBe "/devices/012345678900/status"
         }
     }
+
+    context("getHub2Status") {
+        should("return meter value") {
+            server.enqueue(
+                MockResponse().setBody(
+                    """
+                    {
+                        "statusCode": 100,
+                        "message": "success",
+                        "body": {
+                            "deviceId": "012345678900",
+                            "deviceType": "Hub 2",
+                            "hubDeviceId": "000000000000",
+                            "version": "V0.8-0.6",
+                            "temperature": 13.5,
+                            "humidity": 72,
+                            "lightLevel": 3
+                        }
+                    }
+                    """.trimIndent()
+                )
+            )
+            server.start()
+
+            SwitchBotClient(
+                "access_token",
+                "secret",
+                server.url("/").toString()
+            ).getHub2Status("012345678900") shouldBeEqualToComparingFields Hub2StatusResponse(
+                statusCode = 100,
+                message = "success",
+                body = Hub2Status(
+                    deviceId = "012345678900",
+                    deviceType = "Hub 2",
+                    hubDeviceId = "000000000000",
+                    version = "V0.8-0.6",
+                    temperature = 13.5f,
+                    humidity = 72,
+                    lightLevel = 3,
+                ),
+            )
+            server.takeRequest().path shouldBe "/devices/012345678900/status"
+        }
+    }
 })

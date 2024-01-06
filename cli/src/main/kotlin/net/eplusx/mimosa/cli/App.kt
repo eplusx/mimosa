@@ -19,6 +19,10 @@ fun main(args: Array<String>) {
                     require(args.size >= 3) { "Usage: mimosa-cli switchbot get-plug-mini-status <device-id>" }
                     println(client.getPlugMiniStatus(args[2]).toJson())
                 }
+                "get-hub2-status" -> {
+                    require(args.size >= 3) { "Usage: mimosa-cli switchbot get-hub2-status <device-id>" }
+                    println(client.getHub2Status(args[2]).toJson())
+                }
                 else -> throw IllegalArgumentException("Unknown switchbot command: ${args[1]}")
             }
         }
