@@ -1,8 +1,6 @@
 package net.eplusx.mimosa.lib.switchbot
 
 import com.squareup.moshi.JsonClass
-import com.squareup.moshi.Moshi
-import okio.BufferedSource
 
 @JsonClass(generateAdapter = true)
 data class DevicesResponse(
@@ -10,7 +8,7 @@ data class DevicesResponse(
     val message: String,
     val body: Devices,
 ) {
-    fun toJson(indent: String = "  "): String = json.to(this, indent = indent)
+    fun toJson(): String = json.to(this)
 
     companion object {
         val json = JsonSerializer(DevicesResponse::class.java)

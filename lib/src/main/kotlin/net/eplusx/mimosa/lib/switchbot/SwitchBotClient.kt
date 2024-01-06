@@ -28,6 +28,9 @@ class SwitchBotClient(
     fun getMeterStatus(deviceId: String) =
         MeterStatusResponse.json.from(get("devices/${deviceId}/status").body!!.source())
 
+    fun getPlugMiniStatus(deviceId: String) =
+        PlugMiniStatusResponse.json.from(get("devices/${deviceId}/status").body!!.source())
+
     private fun buildRequest(endpoint: String): Request.Builder {
         val token = accessToken
         val secret = secret

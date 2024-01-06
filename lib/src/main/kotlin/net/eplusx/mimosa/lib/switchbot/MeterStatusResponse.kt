@@ -8,7 +8,7 @@ data class MeterStatusResponse(
     val message: String,
     val body: MeterStatus,
 ) {
-    fun toJson(indent: String = "  "): String = json.to(this, indent = indent)
+    fun toJson(): String = json.to(this)
 
     companion object {
         val json = JsonSerializer(MeterStatusResponse::class.java)
