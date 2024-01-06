@@ -6,7 +6,11 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 
 class SwitchBotClientTest : ShouldSpec({
-    val server = MockWebServer()
+    lateinit var server: MockWebServer
+
+    beforeTest {
+        server = MockWebServer()
+    }
 
     afterTest {
         server.shutdown()
@@ -78,6 +82,49 @@ class SwitchBotClientTest : ShouldSpec({
                             hubDeviceId = "0123456789FF",
                         ),
                     ),
+                ),
+            )
+        }
+    }
+
+    context("getMeterStatus") {
+        should("return meter value") {
+            server.enqueue(
+                MockResponse().setBody(
+                    """
+                    {
+                        "statusCode": 100,
+                        "message": "success",
+                        "body": {
+                            "deviceId": "012345678900",
+                            "deviceType": "Meter",
+                            "hubDeviceId": "0123456789FF",
+                            "temperature": 25.5,
+                            "humidity": 61,
+                            "battery": 77,
+                            "version": "V2.9"
+                        }
+                    }
+                    """.trimIndent()
+                )
+            )
+            server.start()
+
+            SwitchBotClient(
+                "access_token",
+                "secret",
+                server.url("/").toString()
+            ).getMeterStatus("012345678900") shouldBeEqualToComparingFields MeterStatusResponse(
+                statusCode = 100,
+                message = "success",
+                body = MeterStatus(
+                    deviceId = "012345678900",
+                    deviceType = "Meter",
+                    hubDeviceId = "0123456789FF",
+                    temperature = 25.5f,
+                    humidity = 61,
+                    battery = 77,
+                    version = "V2.9",
                 ),
             )
         }

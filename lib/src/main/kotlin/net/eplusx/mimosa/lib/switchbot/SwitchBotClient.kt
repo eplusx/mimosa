@@ -23,7 +23,10 @@ class SwitchBotClient(
         require(endpointPrefix.endsWith("/")) { "endpointPrefix must end with /" }
     }
 
-    fun getDevices() = DevicesResponse.fromJson(get("devices").body!!.source())
+    fun getDevices() = DevicesResponse.json.from(get("devices").body!!.source())
+
+    fun getMeterStatus(deviceId: String) =
+        MeterStatusResponse.json.from(get("devices/${deviceId}/status").body!!.source())
 
     private fun buildRequest(endpoint: String): Request.Builder {
         val token = accessToken

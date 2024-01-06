@@ -11,6 +11,10 @@ fun main(args: Array<String>) {
             val client = SwitchBotClient(Secrets.SwitchBot.accessToken, Secrets.SwitchBot.secret)
             when (args[1]) {
                 "get-devices" -> println(client.getDevices().toJson())
+                "get-meter-status" -> {
+                    require(args.size >= 3) { "Usage: mimosa-cli switchbot get-meter-status <device-id>" }
+                    println(client.getMeterStatus(args[2]).toJson())
+                }
                 else -> throw IllegalArgumentException("Unknown switchbot command: ${args[1]}")
             }
         }

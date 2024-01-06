@@ -10,15 +10,10 @@ data class DevicesResponse(
     val message: String,
     val body: Devices,
 ) {
-    fun toJson(indent: String = "  "): String = adapter.indent(indent).toJson(this)
+    fun toJson(indent: String = "  "): String = json.to(this, indent = indent)
 
     companion object {
-        private val moshi = Moshi.Builder().build()
-        private val adapter = moshi.adapter(DevicesResponse::class.java)
-
-        fun fromJson(json: String): DevicesResponse = adapter.fromJson(json)!!
-
-        fun fromJson(json: BufferedSource): DevicesResponse = adapter.fromJson(json)!!
+        val json = JsonSerializer(DevicesResponse::class.java)
     }
 }
 
