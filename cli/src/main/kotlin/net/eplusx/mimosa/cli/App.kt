@@ -1,5 +1,6 @@
 package net.eplusx.mimosa.cli
 
+import net.eplusx.mimosa.lib.Secrets
 import net.eplusx.mimosa.lib.nature.NatureClient
 import net.eplusx.mimosa.lib.switchbot.SwitchBotClient
 

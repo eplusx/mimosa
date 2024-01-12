@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/cli" />
+            <option value="$PROJECT_DIR$/daemon" />
             <option value="$PROJECT_DIR$/lib" />
           </set>
         </option>

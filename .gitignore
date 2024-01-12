@@ -29,4 +29,5 @@ replay_pid*
 build
 
 # Secret files
-app/src/main/resources/secrets.config
+cli/src/main/resources/secrets.config
+daemon/src/main/resources/secrets.config
