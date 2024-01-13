@@ -8,6 +8,15 @@ version = "0.1.0-SNAPSHOT"
 
 dependencies {
     implementation(project(":lib"))
+
+    implementation(platform("io.opentelemetry:opentelemetry-bom:1.34.0"))
+    implementation("io.opentelemetry:opentelemetry-api")
+    implementation("io.opentelemetry:opentelemetry-sdk")
+    implementation("io.opentelemetry:opentelemetry-sdk-metrics")
+    implementation("io.opentelemetry:opentelemetry-exporter-logging")
+    implementation("io.opentelemetry:opentelemetry-semconv:1.30.1-alpha")
+    implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+    implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
 }
 
 application {
