@@ -14,6 +14,7 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-sdk-metrics")
     implementation("io.opentelemetry:opentelemetry-exporter-logging")
+    implementation("io.opentelemetry:opentelemetry-exporter-prometheus:1.34.1-alpha")
     implementation("io.opentelemetry:opentelemetry-semconv:1.30.1-alpha")
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")

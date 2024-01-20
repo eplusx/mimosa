@@ -1,7 +1,6 @@
 package net.eplusx.mimosa.daemon
 
 import io.opentelemetry.api.OpenTelemetry
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.metrics.Meter
 import net.eplusx.mimosa.lib.nature.NatureClient
@@ -43,7 +42,11 @@ class MimosaDaemon(
     }
 
     private fun registerMetrics() {
-        meter.gaugeBuilder("temperature").setDescription("Temperature").setUnit("°C").buildWithCallback {
+        // Do not set "°C" as the unit; it is automatically appended to the metric name by OpenTelemetry, but "°" is
+        // somehow dropped (probably because it's not an ASCII character).
+        // Prometheus requires the unit and the metric name suffix to be the same; it causes an error like
+        // `msg="Append failed" err="unit \"°C\" not a suffix of metric \"temperature_C\"` in the debug-level log.
+        meter.gaugeBuilder("temperature").setDescription("Temperature").setUnit("C").buildWithCallback {
             for (entry in temperatureMap) {
                 it.record(
                     entry.value.temperature,
