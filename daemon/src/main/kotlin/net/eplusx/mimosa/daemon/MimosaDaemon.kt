@@ -43,16 +43,12 @@ class MimosaDaemon(
     }
 
     private fun registerMetrics() {
-        // TODO: Consider rewriting with more idiomatic Kotlin code.
         meter.gaugeBuilder("temperature").setDescription("Temperature").setUnit("°C").buildWithCallback {
             for (entry in temperatureMap) {
-                val attributes = Attributes.of(
-                    AttributeKey.stringKey("device_id"),
-                    entry.key,
-                    AttributeKey.stringKey("device_name"),
-                    entry.value.deviceName,
+                it.record(
+                    entry.value.temperature,
+                    Attributes.builder().put("device_id", entry.key).put("device_name", entry.value.deviceName).build()
                 )
-                it.record(entry.value.temperature, attributes)
             }
         }
     }
