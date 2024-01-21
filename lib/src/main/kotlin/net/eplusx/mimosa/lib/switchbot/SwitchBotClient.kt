@@ -1,7 +1,9 @@
 package net.eplusx.mimosa.lib.switchbot
 
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
 import java.time.Duration
@@ -34,6 +36,16 @@ class SwitchBotClient(
     fun getHub2Status(deviceId: String) =
         Hub2StatusResponse.json.from(get("devices/${deviceId}/status").body!!.source())
 
+    fun setupWebhook(url: String) =
+        SetupWebhookResponse.json.from(
+            post("webhook/setupWebhook", SetupWebhookRequest(url = url).toJson()).body!!.source()
+        )
+
+    fun deleteWebhook(url: String) =
+        DeleteWebhookResponse.json.from(
+            post("webhook/deleteWebhook", DeleteWebhookRequest(url = url).toJson()).body!!.source()
+        )
+
     private fun buildRequest(endpoint: String): Request.Builder {
         val token = accessToken
         val secret = secret
@@ -54,7 +66,22 @@ class SwitchBotClient(
 
     private fun getRequest(endpoint: String): Request = buildRequest(endpoint).get().build()
 
+    private fun postRequest(endpoint: String, body: String): Request = buildRequest(endpoint).post(
+        body.toRequestBody(
+            applicationJsonMediaType
+        )
+    ).build()
+
     private fun get(endpoint: String): Response = httpClient.newCall(getRequest(endpoint)).execute().apply {
-        if (!isSuccessful) throw IOException("HTTP $code for $endpoint: $message")
+        if (!isSuccessful) throw IOException("HTTP $code for POST $endpoint: $message")
+    }
+
+    private fun post(endpoint: String, body: String): Response =
+        httpClient.newCall(postRequest(endpoint, body)).execute().apply {
+            if (!isSuccessful) throw IOException("HTTP $code for POST $endpoint: $message")
+        }
+
+    companion object {
+        private val applicationJsonMediaType = "application/json; charset=utf-8".toMediaType()
     }
 }
