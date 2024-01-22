@@ -59,10 +59,14 @@ class MimosaDaemon(
     fun start() {
         val timer = Timer("updater")
         timer.scheduleAtFixedRate(0, updateInterval.toMillis()) {
-            for (device in natureClient.getDevices()) {
-                device.newestEvents?.get("te")?.let {
-                    temperatureMap[device.id]!!.temperature = it.value.toDouble()
+            try {
+                for (device in natureClient.getDevices()) {
+                    device.newestEvents?.get("te")?.let {
+                        temperatureMap[device.id]!!.temperature = it.value.toDouble()
+                    }
                 }
+            } catch (t: Throwable) {
+                println("Unhandled throwable in the updater: $t")
             }
         }
     }
