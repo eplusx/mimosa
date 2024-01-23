@@ -1,6 +1,9 @@
+
 plugins {
-    id("mimosa.kotlin-application-conventions")
+    id("io.ktor.plugin") version "2.3.7"
     id("com.github.johnrengelman.shadow")
+
+    id("mimosa.kotlin-application-conventions")
 }
 
 group = "net.eplusx.mimosa"
@@ -18,10 +21,17 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-semconv:1.30.1-alpha")
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
+
+    implementation("io.ktor:ktor-server-core-jvm")
+    implementation("io.ktor:ktor-server-netty-jvm")
+    testImplementation("io.ktor:ktor-server-tests-jvm")
 }
 
 application {
     mainClass.set("net.eplusx.mimosa.daemon.AppKt")
+
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
 // Set the Main-Class attribute in the manifest to make a JAR file executable.
