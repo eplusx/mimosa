@@ -1,8 +1,7 @@
 package net.eplusx.mimosa.daemon
 
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.server.application.Application
+import io.ktor.server.netty.EngineMain
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import net.eplusx.mimosa.lib.Secrets
 import net.eplusx.mimosa.lib.nature.NatureClient
@@ -13,8 +12,7 @@ fun main(args: Array<String>) {
         NatureClient(Secrets.Nature.accessToken),
     )
     daemon.start()
-
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module).start(wait = true)
+    EngineMain.main(args)
 }
 
 fun Application.module() {
