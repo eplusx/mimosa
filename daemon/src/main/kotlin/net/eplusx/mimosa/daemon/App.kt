@@ -7,7 +7,7 @@ import net.eplusx.mimosa.lib.Secrets
 import net.eplusx.mimosa.lib.nature.NatureClient
 
 fun main(args: Array<String>) {
-    val daemon = MimosaDaemon(
+    val daemon = NatureUpdater(
         AutoConfiguredOpenTelemetrySdk.initialize().openTelemetrySdk,
         NatureClient(Secrets.Nature.accessToken),
     )

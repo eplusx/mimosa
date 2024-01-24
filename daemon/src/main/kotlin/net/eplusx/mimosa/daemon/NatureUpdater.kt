@@ -14,7 +14,7 @@ import kotlin.concurrent.scheduleAtFixedRate
  * TODO: Test this class. It is a bit complicated as it should wait for the reader/exporter to retrieve the data.
  *  See https://github.com/open-telemetry/opentelemetry-java-examples/tree/main/telemetry-testing
  */
-class MimosaDaemon(
+class NatureUpdater(
     openTelemetry: OpenTelemetry,
     private val natureClient: NatureClient,
     private val updateInterval: Duration = Duration.ofSeconds(60),
@@ -57,7 +57,7 @@ class MimosaDaemon(
     }
 
     fun start() {
-        val timer = Timer("updater")
+        val timer = Timer("nature-updater")
         timer.scheduleAtFixedRate(0, updateInterval.toMillis()) {
             try {
                 for (device in natureClient.getDevices()) {
