@@ -11,4 +11,4 @@ plugins {
 }
 
 rootProject.name = "mimosa"
-include("lib", "cli", "daemon")
+include("lib", "cli", "server")

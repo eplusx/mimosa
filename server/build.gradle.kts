@@ -28,7 +28,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("net.eplusx.mimosa.daemon.AppKt")
+    mainClass.set("net.eplusx.mimosa.server.AppKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -38,6 +38,6 @@ application {
 // https://qiita.com/T45K/items/116b092960c7595884dd
 val jar by tasks.getting(Jar::class) {
     manifest {
-        attributes["Main-Class"] = "net.eplusx.mimosa.daemon.AppKt"
+        attributes["Main-Class"] = "net.eplusx.mimosa.server.AppKt"
     }
 }

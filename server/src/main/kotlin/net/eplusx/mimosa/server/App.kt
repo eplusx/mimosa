@@ -1,4 +1,4 @@
-package net.eplusx.mimosa.daemon
+package net.eplusx.mimosa.server
 
 import io.ktor.server.application.Application
 import io.ktor.server.netty.EngineMain
@@ -7,11 +7,11 @@ import net.eplusx.mimosa.lib.Secrets
 import net.eplusx.mimosa.lib.nature.NatureClient
 
 fun main(args: Array<String>) {
-    val daemon = NatureUpdater(
+    val natureUpdater = NatureUpdater(
         AutoConfiguredOpenTelemetrySdk.initialize().openTelemetrySdk,
         NatureClient(Secrets.Nature.accessToken),
     )
-    daemon.start()
+    natureUpdater.start()
     EngineMain.main(args)
 }
 

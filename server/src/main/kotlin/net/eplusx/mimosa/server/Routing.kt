@@ -1,4 +1,4 @@
-package net.eplusx.mimosa.daemon
+package net.eplusx.mimosa.server
 
 import io.ktor.server.application.*
 import io.ktor.server.response.*

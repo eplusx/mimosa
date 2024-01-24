@@ -1,4 +1,4 @@
-package net.eplusx.mimosa.daemon
+package net.eplusx.mimosa.server
 
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
@@ -9,7 +9,7 @@ import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 
 /**
- * The daemon that periodically retrieves the data from the Nature Remo API and records it to the OpenTelemetry.
+ * The updater that periodically retrieves the data from the Nature Remo API and records it to the OpenTelemetry.
  *
  * TODO: Test this class. It is a bit complicated as it should wait for the reader/exporter to retrieve the data.
  *  See https://github.com/open-telemetry/opentelemetry-java-examples/tree/main/telemetry-testing

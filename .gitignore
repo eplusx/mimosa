@@ -30,4 +30,4 @@ build
 
 # Secret files
 cli/src/main/resources/secrets.config
-daemon/src/main/resources/secrets.config
+server/src/main/resources/secrets.config

@@ -6,7 +6,7 @@ import java.util.Properties
  * Mimosa secrets.
  *
  * To make use of these secrets, you need to create a file named `secrets.config` in the `resources` directory by
- * copying `secrets.config.template` and filling in the values in each project (cli and daemon).
+ * copying `secrets.config.template` and filling in the values in each project (cli and server).
  */
 object Secrets {
     object SwitchBot {
