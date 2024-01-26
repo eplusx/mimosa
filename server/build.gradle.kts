@@ -1,9 +1,10 @@
-
 plugins {
-    id("io.ktor.plugin") version "2.3.7"
-    id("com.github.johnrengelman.shadow")
-
     id("mimosa.kotlin-application-conventions")
+
+    id("io.ktor.plugin") version "2.3.7"
+    kotlin("plugin.serialization") version "1.9.21"
+
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "net.eplusx.mimosa"
@@ -24,6 +25,8 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("io.ktor:ktor-server-content-negotiation")
+    implementation("io.ktor:ktor-serialization-kotlinx-json")
     testImplementation("io.ktor:ktor-server-tests-jvm")
 }
 
