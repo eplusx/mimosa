@@ -15,6 +15,7 @@
       <env name="OTEL_METRICS_EXPORTER" value="logging" />
       <env name="OTEL_SERVICE_NAME" value="mimosa-daemon" />
       <env name="OTEL_TRACES_EXPORTER" value="logging" />
+      <env name="KTOR_DEVELOPMENT" value="true" />
     </envs>
     <method v="2">
       <option name="Make" enabled="true" />
