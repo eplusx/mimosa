@@ -19,7 +19,7 @@ class SwitchBotClient(
     private val endpointPrefix: String = "https://api.switch-bot.com/v1.1/"
 ) {
     private val httpClient =
-        OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(10)).callTimeout(Duration.ofSeconds(30)).build()
+        OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(30)).callTimeout(Duration.ofSeconds(30)).build()
 
     init {
         require(endpointPrefix.endsWith("/")) { "endpointPrefix must end with /" }

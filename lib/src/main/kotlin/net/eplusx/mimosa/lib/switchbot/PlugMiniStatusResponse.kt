@@ -27,9 +27,9 @@ data class PlugMiniStatus(
      */
     @Json(name = "voltage") val voltageVolt: Double,
     /**
-     * (Effective) current at the moment in milli Ampere. It's said to be in Ampere in the spec, but it's probably wrong.
+     * Something weird. It's said to be in Ampere in the spec, but it's probably wrong.
      */
-    @Json(name = "electricCurrent") val currentMilliAmpere: Double,
+    val electricCurrent: Double,
     /**
      * Power at the moment in Watt. It's said to be the power consumed in a day, but it's probably wrong.
      */

@@ -1,4 +1,4 @@
-package net.eplusx.mimosa.server
+package net.eplusx.mimosa.server.nature
 
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.Attributes
@@ -14,7 +14,7 @@ import kotlin.concurrent.scheduleAtFixedRate
  * TODO: Test this class. It is a bit complicated as it should wait for the reader/exporter to retrieve the data.
  *  See https://github.com/open-telemetry/opentelemetry-java-examples/tree/main/telemetry-testing
  */
-class NatureUpdater(
+class NatureMetrics(
     openTelemetry: OpenTelemetry,
     private val natureClient: NatureClient,
     private val updateInterval: Duration = Duration.ofSeconds(60),
@@ -29,7 +29,7 @@ class NatureUpdater(
     /**
      * Keeps the mapping from a device ID to the latest temperature.
      *
-     * The value of this map is updated by a periodic update task started in [start]. It is read by a callback
+     * The value of this map is updated by a periodic update task started in [startUpdater]. It is read by a callback
      * registered in [registerMetrics].
      */
     private val temperatureMap: Map<String, DeviceTemperature>
@@ -56,7 +56,7 @@ class NatureUpdater(
         }
     }
 
-    fun start() {
+    fun startUpdater() {
         val timer = Timer("nature-updater")
         timer.scheduleAtFixedRate(0, updateInterval.toMillis()) {
             try {

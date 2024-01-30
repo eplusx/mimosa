@@ -3,7 +3,10 @@ package net.eplusx.mimosa.server.switchbot
 import io.opentelemetry.api.OpenTelemetry
 import mu.KotlinLogging
 import net.eplusx.mimosa.lib.switchbot.SwitchBotClient
+import java.time.Duration
+import java.util.Timer
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.concurrent.withLock
 import io.opentelemetry.api.metrics.Meter as OpenTelemetryMeter
 
@@ -12,6 +15,7 @@ val logger = KotlinLogging.logger { }
 class SwitchBotMetrics(
     openTelemetry: OpenTelemetry,
     private val switchBotClient: SwitchBotClient,
+    private val maxUpdatesPerDay: Int = 9500,
 ) {
     private val meter: OpenTelemetryMeter =
         openTelemetry.meterBuilder("mimosa-switchbot").setInstrumentationVersion("0.1.0").build()
@@ -23,6 +27,7 @@ class SwitchBotMetrics(
 
     init {
         // TODO: Consider parallelizing requests to SwitchBot API. It takes ~2 seconds per device, which makes very long to start up the server.
+        // TODO: Retry on failure.
         val devices = switchBotClient.getDevices().body.deviceList
         meterMap = devices.filter { Meter.isMeter(it.deviceType) }.associateBy { it.deviceId }.mapValues {
             logger.info { "Found Meter: ${it.value.deviceId} (${it.value.deviceName})" }
@@ -53,11 +58,10 @@ class SwitchBotMetrics(
                 it.value.deviceId,
                 it.value.deviceName,
                 plugMiniStatus.voltageVolt,
-                0.001 * plugMiniStatus.currentMilliAmpere,
                 plugMiniStatus.powerWatt,
+                PlugMini.guessPowerState(plugMiniStatus),
             )
         }.toMutableMap()
-        hub2Map
         registerMetrics()
     }
 
@@ -90,9 +94,16 @@ class SwitchBotMetrics(
             }
         }
         meter.gaugeBuilder("light_level").ofLongs().setDescription("Light level").buildWithCallback {
-            with(metricsLock) {
+            metricsLock.withLock {
                 for (hub2 in hub2Map.values) {
                     it.record(hub2.lightLevel.toLong(), hub2.getAttributes())
+                }
+            }
+        }
+        meter.gaugeBuilder("power").setDescription("Power").setUnit("watt").buildWithCallback {
+            metricsLock.withLock {
+                for (plugMini in plugMiniMap.values) {
+                    it.record(plugMini.powerWatt, plugMini.getAttributes())
                 }
             }
         }
@@ -142,13 +153,45 @@ class SwitchBotMetrics(
                 logger.warn { "Unknown device ID: $deviceId" }
                 return
             }
-            if (powerState != plugMini.powerState()) {
+            if (powerState != plugMini.powerState) {
                 logger.info { "Plug Mini update for $deviceId (${plugMini.deviceName}): powerState $powerState" }
                 if (powerState) {
-                    TODO("Start updating the Plug Mini metrics")
+                    plugMiniMap[deviceId] = plugMini.powerOn()
                 } else {
                     plugMiniMap[deviceId] = plugMini.powerOff()
                 }
+            }
+        }
+    }
+
+    fun startUpdater() {
+        val numDevicesToUpdate = plugMiniMap.size
+        // It's possible that the interval can be shortened if devices are not powered on all the time, and we know the
+        // number of requests sent to the SwitchBot server. Maybe it's not worth the effort yet.
+        val updateInterval =
+            Duration.ofDays(1).dividedBy(maxUpdatesPerDay.toLong()).multipliedBy(numDevicesToUpdate.toLong())
+        logger.info { "Found $numDevicesToUpdate devices to update, interval is set to ${updateInterval.toSeconds()} seconds" }
+        val timer = Timer("switchbot-updater")
+        timer.scheduleAtFixedRate(updateInterval.toMillis(), updateInterval.toMillis()) {
+            try {
+                // Get the cached copy first; it takes time to get the stats with SwitchBot API, and it takes too much
+                // to acquire the loch for the entire update process.
+                val plugMinis = metricsLock.withLock { plugMiniMap.values.map { it.copy() } }
+                for (plugMini in plugMinis) {
+                    if (plugMini.powerState) {
+                        val plugMiniStatus = switchBotClient.getPlugMiniStatus(plugMini.deviceId).body
+                        metricsLock.withLock {
+                            plugMiniMap[plugMini.deviceId] = plugMini.copy(
+                                voltageVolt = plugMiniStatus.voltageVolt,
+                                powerWatt = plugMiniStatus.powerWatt,
+                                // Update the powerState as well; it might be turned off while this device waits its turn.
+                                powerState = PlugMini.guessPowerState(plugMiniStatus)
+                            )
+                        }
+                    }
+                }
+            } catch (t: Throwable) {
+                logger.error(t) { "Unhandled throwable in the updater" }
             }
         }
     }
