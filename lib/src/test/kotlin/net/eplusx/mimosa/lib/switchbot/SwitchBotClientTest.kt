@@ -170,7 +170,7 @@ class SwitchBotClientTest : ShouldSpec({
                     hubDeviceId = "000000000000",
                     version = "V1.5-1.5",
                     voltageVolt = 100f,
-                    currentAmpere = 15.5f,
+                    currentMilliAmpere = 15.5f,
                     powerWatt = 143.5f,
                     electricityOfDay = 1253,
                 )

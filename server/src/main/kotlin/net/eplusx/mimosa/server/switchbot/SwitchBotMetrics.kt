@@ -18,9 +18,11 @@ class SwitchBotMetrics(
 
     private val meterMap: MutableMap<String, Meter>
     private val hub2Map: MutableMap<String, Hub2>
+    private val plugMiniMap: MutableMap<String, PlugMini>
     private val metricsLock = ReentrantLock()
 
     init {
+        // TODO: Consider parallelizing requests to SwitchBot API. It takes ~2 seconds per device, which makes very long to start up the server.
         val devices = switchBotClient.getDevices().body.deviceList
         meterMap = devices.filter { Meter.isMeter(it.deviceType) }.associateBy { it.deviceId }.mapValues {
             logger.info { "Found Meter: ${it.value.deviceId} (${it.value.deviceName})" }
@@ -44,6 +46,18 @@ class SwitchBotMetrics(
                 hub2Status.lightLevel,
             )
         }.toMutableMap()
+        plugMiniMap = devices.filter { PlugMini.isPlug(it.deviceType) }.associateBy { it.deviceId }.mapValues {
+            logger.info { "Found Plug Mini: ${it.value.deviceId} (${it.value.deviceName})" }
+            val plugMiniStatus = switchBotClient.getPlugMiniStatus(it.value.deviceId).body
+            PlugMini(
+                it.value.deviceId,
+                it.value.deviceName,
+                plugMiniStatus.voltageVolt,
+                0.001 * plugMiniStatus.currentMilliAmpere,
+                plugMiniStatus.powerWatt,
+            )
+        }.toMutableMap()
+        hub2Map
         registerMetrics()
     }
 
@@ -90,6 +104,8 @@ class SwitchBotMetrics(
             updateMeter(context.deviceMac, context.temperature!!, 0.01 * context.humidity!!, 0.01 * context.battery!!)
         } else if (Hub2.isHub2(context.deviceType) && context.scale == "CELSIUS") {
             updateHub2(context.deviceMac, context.temperature!!, 0.01 * context.humidity!!, context.lightLevel!!)
+        } else if (PlugMini.isPlug(context.deviceType)) {
+            updatePlugMini(context.deviceMac, context.powerState == "ON")
         } else {
             logger.info { "Unhandled TelemetryRequest: $request" }
         }
@@ -116,6 +132,24 @@ class SwitchBotMetrics(
             }
             logger.info { "Hub2 update for $deviceId (${hub2.deviceName}): temperature $temperature, humidity $humidity, lightLevel $lightLevel" }
             hub2Map[deviceId] = hub2.copy(temperature = temperature, humidity = humidity, lightLevel = lightLevel)
+        }
+    }
+
+    private fun updatePlugMini(deviceId: String, powerState: Boolean) {
+        metricsLock.withLock {
+            val plugMini = plugMiniMap[deviceId]
+            if (plugMini == null) {
+                logger.warn { "Unknown device ID: $deviceId" }
+                return
+            }
+            if (powerState != plugMini.powerState()) {
+                logger.info { "Plug Mini update for $deviceId (${plugMini.deviceName}): powerState $powerState" }
+                if (powerState) {
+                    TODO("Start updating the Plug Mini metrics")
+                } else {
+                    plugMiniMap[deviceId] = plugMini.powerOff()
+                }
+            }
         }
     }
 }

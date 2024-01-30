@@ -63,4 +63,9 @@ data class TelemetryContext(
      * Power state. Can be "ON" or "OFF".
      */
     val powerState: String? = null,
+    // Motion Sensor properties.
+    /**
+     * Detection state. Can be "DETECTED" or "NOT_DETECTED".
+     */
+    val detectionState: String? = null,
 )
