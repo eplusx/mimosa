@@ -53,6 +53,11 @@ data class TelemetryContext(
      * Temperature unit. Can be "CELSIUS" or "FAHRENHEIT".
      */
     val scale: String? = null,
+    // Hub 2 properties.
+    /**
+     * Light level, between 1 and 20.
+     */
+    val lightLevel: Int? = null,
     // Plug properties.
     /**
      * Power state. Can be "ON" or "OFF".

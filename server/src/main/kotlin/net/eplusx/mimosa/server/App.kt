@@ -8,20 +8,24 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import net.eplusx.mimosa.lib.Secrets
 import net.eplusx.mimosa.lib.nature.NatureClient
+import net.eplusx.mimosa.lib.switchbot.SwitchBotClient
+import net.eplusx.mimosa.server.switchbot.SwitchBotMetrics
 
 fun main(args: Array<String>) {
-    val natureUpdater = NatureUpdater(
-        AutoConfiguredOpenTelemetrySdk.initialize().openTelemetrySdk,
-        NatureClient(Secrets.Nature.accessToken),
-    )
-    natureUpdater.start()
     EngineMain.main(args)
 }
 
 fun Application.module() {
+    val openTelemetry = AutoConfiguredOpenTelemetrySdk.initialize().openTelemetrySdk
+    val switchBotClient = SwitchBotClient(Secrets.SwitchBot.accessToken, Secrets.SwitchBot.secret)
+    val switchBotMetrics = SwitchBotMetrics(openTelemetry, switchBotClient)
+
+    val natureUpdater = NatureUpdater(openTelemetry, NatureClient(Secrets.Nature.accessToken))
+    natureUpdater.start()
+
     install(ContentNegotiation) {
         json()
     }
 
-    configureRouting()
+    configureRouting(switchBotMetrics)
 }

@@ -21,7 +21,7 @@ data class MeterStatus(
     val deviceType: String,
     val hubDeviceId: String,
     val version: String,
-    val temperature: Float,
+    val temperature: Double,
     val humidity: Int,
     val battery: Int,
 )
