@@ -2,6 +2,8 @@ package net.eplusx.mimosa.server.switchbot
 
 import io.opentelemetry.api.OpenTelemetry
 import mu.KotlinLogging
+import net.eplusx.mimosa.lib.computeVaporPressureDeficit
+import net.eplusx.mimosa.lib.computeVolumetricHumidity
 import net.eplusx.mimosa.lib.switchbot.SwitchBotClient
 import java.time.Duration
 import java.util.Timer
@@ -83,6 +85,26 @@ class SwitchBotMetrics(
                 }
                 for (hub2 in hub2Map.values) {
                     it.record(hub2.humidity, hub2.getAttributes())
+                }
+            }
+        }
+        meter.gaugeBuilder("vapor_pressure_deficit").setDescription("Vapor pressure deficit").setUnit("kPa").buildWithCallback {
+            metricsLock.withLock {
+                for (meter in meterMap.values) {
+                    it.record(computeVaporPressureDeficit(meter.temperature, meter.humidity), meter.getAttributes())
+                }
+                for (hub2 in hub2Map.values) {
+                    it.record(computeVaporPressureDeficit(hub2.temperature, hub2.humidity), hub2.getAttributes())
+                }
+            }
+        }
+        meter.gaugeBuilder("volumetric_humidity").setDescription("Volumetric humidity").setUnit("gm3").buildWithCallback {
+            metricsLock.withLock {
+                for (meter in meterMap.values) {
+                    it.record(computeVolumetricHumidity(meter.temperature, meter.humidity), meter.getAttributes())
+                }
+                for (hub2 in hub2Map.values) {
+                    it.record(computeVolumetricHumidity(hub2.temperature, hub2.humidity), hub2.getAttributes())
                 }
             }
         }
