@@ -1,5 +1,6 @@
 package net.eplusx.mimosa.lib.switchbot
 
+import mu.KotlinLogging
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -12,6 +13,8 @@ import java.util.Base64
 import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+
+private val logger = KotlinLogging.logger { }
 
 class SwitchBotClient(
     private val accessToken: String,
@@ -86,6 +89,9 @@ class SwitchBotClient(
         while (true) {
             val response = process()
             if (response.isSuccessful) {
+                if (retries > 0) {
+                    logger.debug { "Successful response for $endpointMessage after $retries retries" }
+                }
                 return response
             }
             if (++retries > maxRetries) throw IOException("$maxRetries retries exhausted for $endpointMessage: ${response.body}")
