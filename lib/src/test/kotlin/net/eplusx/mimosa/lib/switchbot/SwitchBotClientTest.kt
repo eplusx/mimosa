@@ -134,10 +134,8 @@ class SwitchBotClientTest : ShouldSpec({
     }
 
     context("getPlugMiniStatus") {
-        should("return plug mini status") {
-            server.enqueue(
-                MockResponse().setBody(
-                    """
+        val typicalResponseJson =
+            """
                     {
                         "statusCode": 100,
                         "message": "success",
@@ -153,28 +151,43 @@ class SwitchBotClientTest : ShouldSpec({
                         }
                     }
                     """.trimIndent()
-                )
+        val typicalResponse = PlugMiniStatusResponse(
+            statusCode = 100,
+            message = "success",
+            body = PlugMiniStatus(
+                deviceId = "012345678900",
+                deviceType = "Plug",
+                hubDeviceId = "000000000000",
+                version = "V1.5-1.5",
+                voltageVolt = 100.0,
+                electricCurrent = 15.5,
+                powerWatt = 143.5,
+                electricityOfDay = 1253,
             )
+        )
+
+        should("return plug mini status") {
+            server.enqueue(MockResponse().setBody(typicalResponseJson))
             server.start()
 
             SwitchBotClient(
                 "access_token",
                 "secret",
                 server.url("/").toString()
-            ).getPlugMiniStatus("012345678900") shouldBeEqualToComparingFields PlugMiniStatusResponse(
-                statusCode = 100,
-                message = "success",
-                body = PlugMiniStatus(
-                    deviceId = "012345678900",
-                    deviceType = "Plug",
-                    hubDeviceId = "000000000000",
-                    version = "V1.5-1.5",
-                    voltageVolt = 100.0,
-                    electricCurrent = 15.5,
-                    powerWatt = 143.5,
-                    electricityOfDay = 1253,
-                )
-            )
+            ).getPlugMiniStatus("012345678900") shouldBeEqualToComparingFields typicalResponse
+            server.takeRequest().path shouldBe "/devices/012345678900/status"
+        }
+
+        should("retry on HTTP 500 error") {
+            server.enqueue(MockResponse().setResponseCode(500).setBody("Temporary error"))
+            server.enqueue(MockResponse().setBody(typicalResponseJson))
+            server.start()
+
+            SwitchBotClient(
+                "access_token",
+                "secret",
+                server.url("/").toString()
+            ).getPlugMiniStatus("012345678900") shouldBeEqualToComparingFields typicalResponse
             server.takeRequest().path shouldBe "/devices/012345678900/status"
         }
     }

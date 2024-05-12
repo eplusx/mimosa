@@ -16,7 +16,9 @@ import javax.crypto.spec.SecretKeySpec
 class SwitchBotClient(
     private val accessToken: String,
     private val secret: String,
-    private val endpointPrefix: String = "https://api.switch-bot.com/v1.1/"
+    private val endpointPrefix: String = "https://api.switch-bot.com/v1.1/",
+    private val maxRetries: Int = 10,
+    private val retryBaseInterval: Duration = Duration.ofMillis(100),
 ) {
     private val httpClient =
         OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(30)).callTimeout(Duration.ofSeconds(30)).build()
@@ -72,14 +74,26 @@ class SwitchBotClient(
         )
     ).build()
 
-    private fun get(endpoint: String): Response = httpClient.newCall(getRequest(endpoint)).execute().apply {
-        if (!isSuccessful) throw IOException("HTTP $code for POST $endpoint: $message")
-    }
+    private fun get(endpoint: String): Response =
+        retryUntilSuccessful("GET $endpoint") { httpClient.newCall(getRequest(endpoint)).execute() }
 
     private fun post(endpoint: String, body: String): Response =
-        httpClient.newCall(postRequest(endpoint, body)).execute().apply {
-            if (!isSuccessful) throw IOException("HTTP $code for POST $endpoint: $message")
+        retryUntilSuccessful("POST $endpoint") { httpClient.newCall(postRequest(endpoint, body)).execute() }
+
+    private fun retryUntilSuccessful(endpointMessage: String, process: () -> Response): Response {
+        var retryInterval = retryBaseInterval
+        var retries = 0
+        while (true) {
+            val response = process()
+            if (response.isSuccessful) {
+                return response
+            }
+            if (++retries > maxRetries) throw IOException("$maxRetries retries exhausted for $endpointMessage: ${response.body}")
+            // TODO: Consider factoring out a fake sleeper.
+            Thread.sleep(retryBaseInterval.toMillis())
+            retryInterval = retryInterval.multipliedBy(2)
         }
+    }
 
     companion object {
         private val applicationJsonMediaType = "application/json; charset=utf-8".toMediaType()
