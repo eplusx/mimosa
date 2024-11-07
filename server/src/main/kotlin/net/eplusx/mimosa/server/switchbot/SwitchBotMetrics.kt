@@ -129,6 +129,13 @@ class SwitchBotMetrics(
                 }
             }
         }
+        meter.gaugeBuilder("power_state").setDescription("Power state (ON = 1 or OFF = 0)").buildWithCallback {
+            metricsLock.withLock {
+                for (plugMini in plugMiniMap.values) {
+                    it.record(if (plugMini.powerState) 1.0 else 0.0, plugMini.getAttributes())
+                }
+            }
+        }
     }
 
     fun update(request: TelemetryRequest) {
@@ -197,7 +204,7 @@ class SwitchBotMetrics(
         timer.scheduleAtFixedRate(updateInterval.toMillis(), updateInterval.toMillis()) {
             try {
                 // Get the cached copy first; it takes time to get the stats with SwitchBot API, and it takes too much
-                // to acquire the loch for the entire update process.
+                // to acquire the lock for the entire update process.
                 val plugMinis = metricsLock.withLock { plugMiniMap.values.map { it.copy() } }
                 for (plugMini in plugMinis) {
                     if (plugMini.powerState) {
