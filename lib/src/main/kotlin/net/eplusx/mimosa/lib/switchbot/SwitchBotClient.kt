@@ -7,6 +7,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
+import java.net.SocketTimeoutException
 import java.time.Duration
 import java.time.Instant
 import java.util.Base64
@@ -22,12 +23,14 @@ class SwitchBotClient(
     private val endpointPrefix: String = "https://api.switch-bot.com/v1.1/",
     private val maxRetries: Int = 10,
     private val retryBaseInterval: Duration = Duration.ofMillis(100),
+    httpClient: OkHttpClient? = null,
 ) {
-    private val httpClient =
-        OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(30)).callTimeout(Duration.ofSeconds(30)).build()
+    private val httpClient: OkHttpClient
 
     init {
         require(endpointPrefix.endsWith("/")) { "endpointPrefix must end with /" }
+        this.httpClient = httpClient ?: OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(30))
+            .callTimeout(Duration.ofSeconds(30)).build()
     }
 
     fun getDevices() = DevicesResponse.json.from(get("devices").body!!.source())
@@ -87,14 +90,19 @@ class SwitchBotClient(
         var retryInterval = retryBaseInterval
         var retries = 0
         while (true) {
-            val response = process()
-            if (response.isSuccessful) {
+            val response = try {
+                process()
+            } catch (e: SocketTimeoutException) {
+                // Retry on network errors.
+                null
+            }
+            if (response != null && response.isSuccessful) {
                 if (retries > 0) {
                     logger.debug { "Successful response for $endpointMessage after $retries retries" }
                 }
                 return response
             }
-            if (++retries > maxRetries) throw IOException("$maxRetries retries exhausted for $endpointMessage: ${response.body}")
+            if (++retries > maxRetries) throw IOException("$maxRetries retries exhausted for $endpointMessage: ${response?.body}")
             // TODO: Consider factoring out a fake sleeper.
             Thread.sleep(retryBaseInterval.toMillis())
             retryInterval = retryInterval.multipliedBy(2)

@@ -2,9 +2,25 @@ package net.eplusx.mimosa.lib.switchbot
 
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.beOfType
+import io.mockk.every
+import io.mockk.mockk
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import java.net.SocketTimeoutException
+
+private fun buildResponse(body: String): Response {
+    val request = Request.Builder().url("http://dummy_endpoint_prefix/").build()
+    return Response.Builder().request(request).protocol(okhttp3.Protocol.HTTP_1_1).code(200).message("OK")
+        .body(body.toResponseBody()).build()
+}
+
 
 @Suppress("unused")
 class SwitchBotClientTest : ShouldSpec({
@@ -46,7 +62,7 @@ class SwitchBotClientTest : ShouldSpec({
                                 "remoteType": "Others",
                                 "hubDeviceId": "0123456789FF"
                             }]
-                      }
+                        }
                     }
                     """.trimIndent()
                 )
@@ -86,6 +102,33 @@ class SwitchBotClientTest : ShouldSpec({
                     ),
                 ),
             )
+        }
+
+        should("retry on socket timeout") {
+            val mockHttpClient = mockk<OkHttpClient>()
+            every { mockHttpClient.newCall(any()).execute() } answers {
+                throw SocketTimeoutException("Timeout")
+            } andThenAnswer {
+                buildResponse(
+                    """
+                        {
+                            "statusCode": 100,
+                            "message": "success",
+                            "body": {
+                                "deviceList": [],
+                                "infraredRemoteList": []
+                            }
+                        }
+                    """.trimIndent()
+                )
+            }
+
+            SwitchBotClient(
+                "access_token",
+                "secret",
+                "http://dummy_endpoint_prefix/",
+                httpClient = mockHttpClient,
+            ).getDevices() should beOfType<DevicesResponse>()
         }
     }
 
