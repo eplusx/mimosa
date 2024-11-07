@@ -104,6 +104,31 @@ class SwitchBotClientTest : ShouldSpec({
             )
         }
 
+        should("retry on internal server error") {
+            server.enqueue(MockResponse().setResponseCode(500).setBody("Internal server error"))
+            server.enqueue(
+                MockResponse().setBody(
+                    """
+                    {
+                        "statusCode": 100,
+                        "message": "success",
+                        "body": {
+                            "deviceList": [],
+                            "infraredRemoteList": []
+                        }
+                    }
+                    """.trimIndent()
+                )
+            )
+            server.start()
+
+            SwitchBotClient(
+                "access_token",
+                "secret",
+                server.url("/").toString()
+            ).getDevices() should beOfType<DevicesResponse>()
+        }
+
         should("retry on socket timeout") {
             val mockHttpClient = mockk<OkHttpClient>()
             every { mockHttpClient.newCall(any()).execute() } answers {
