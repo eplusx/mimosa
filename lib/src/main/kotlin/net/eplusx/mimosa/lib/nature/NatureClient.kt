@@ -21,7 +21,7 @@ class NatureClient(
         require(endpointPrefix.endsWith("/")) { "endpointPrefix must end with /" }
     }
 
-    fun getDevices() = DevicesResponse.fromJson(get("devices").body!!.source())
+    fun getDevices() = get("devices").use { DevicesResponse.fromJson(it.body!!.source()) }
 
     private fun buildRequest(endpoint: String): Request.Builder {
         val token = accessToken

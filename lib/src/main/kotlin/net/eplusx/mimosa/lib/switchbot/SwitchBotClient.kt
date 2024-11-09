@@ -36,23 +36,23 @@ class SwitchBotClient(
             .build()
     }
 
-    fun getDevices() = DevicesResponse.json.from(get("devices").body!!.source())
+    fun getDevices() = get("devices").use { DevicesResponse.json.from(it.body!!.source()) }
 
-    fun getMeterStatus(deviceId: String) = MeterStatusResponse.json.from(get("devices/$deviceId/status").body!!.source())
+    fun getMeterStatus(deviceId: String) = get("devices/$deviceId/status").use { MeterStatusResponse.json.from(it.body!!.source()) }
 
-    fun getPlugMiniStatus(deviceId: String) = PlugMiniStatusResponse.json.from(get("devices/$deviceId/status").body!!.source())
+    fun getPlugMiniStatus(deviceId: String) = get("devices/$deviceId/status").use { PlugMiniStatusResponse.json.from(it.body!!.source()) }
 
-    fun getHub2Status(deviceId: String) = Hub2StatusResponse.json.from(get("devices/$deviceId/status").body!!.source())
+    fun getHub2Status(deviceId: String) = get("devices/$deviceId/status").use { Hub2StatusResponse.json.from(it.body!!.source()) }
 
     fun setupWebhook(url: String) =
-        SetupWebhookResponse.json.from(
-            post("webhook/setupWebhook", SetupWebhookRequest(url = url).toJson()).body!!.source(),
-        )
+        post("webhook/setupWebhook", SetupWebhookRequest(url = url).toJson()).use {
+            SetupWebhookResponse.json.from(it.body!!.source())
+        }
 
     fun deleteWebhook(url: String) =
-        DeleteWebhookResponse.json.from(
-            post("webhook/deleteWebhook", DeleteWebhookRequest(url = url).toJson()).body!!.source(),
-        )
+        post("webhook/deleteWebhook", DeleteWebhookRequest(url = url).toJson()).use {
+            DeleteWebhookResponse.json.from(it.body!!.source())
+        }
 
     private fun buildRequest(endpoint: String): Request.Builder {
         val token = accessToken
