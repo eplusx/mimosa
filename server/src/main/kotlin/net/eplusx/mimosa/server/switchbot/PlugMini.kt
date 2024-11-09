@@ -17,7 +17,7 @@ data class PlugMini(
     val deviceName: String,
     val voltageVolt: Double,
     val powerWatt: Double,
-    val powerState: Boolean,
+    val powerState: Boolean = true,
 ) {
     fun powerOn(): PlugMini {
         return copy(powerState = true)

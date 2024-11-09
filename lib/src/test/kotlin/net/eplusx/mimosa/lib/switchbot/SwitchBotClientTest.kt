@@ -21,7 +21,6 @@ private fun buildResponse(body: String): Response {
         .body(body.toResponseBody()).build()
 }
 
-
 @Suppress("unused")
 class SwitchBotClientTest : ShouldSpec({
     lateinit var server: MockWebServer

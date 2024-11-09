@@ -213,8 +213,7 @@ class SwitchBotMetrics(
                             plugMiniMap[plugMini.deviceId] = plugMini.copy(
                                 voltageVolt = plugMiniStatus.voltageVolt,
                                 powerWatt = plugMiniStatus.powerWatt,
-                                // Update the powerState as well; it might be turned off while this device waits its turn.
-                                powerState = PlugMini.guessPowerState(plugMiniStatus)
+                                // Never assume the plug mini is powered off; it might consume 0 watt even if it's on.
                             )
                         }
                     }
