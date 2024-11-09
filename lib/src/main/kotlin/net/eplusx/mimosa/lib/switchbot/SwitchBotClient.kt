@@ -29,29 +29,29 @@ class SwitchBotClient(
 
     init {
         require(endpointPrefix.endsWith("/")) { "endpointPrefix must end with /" }
-        this.httpClient = httpClient ?: OkHttpClient.Builder().connectTimeout(Duration.ofSeconds(30))
-            .callTimeout(Duration.ofSeconds(30)).build()
+        this.httpClient = httpClient ?: OkHttpClient
+            .Builder()
+            .connectTimeout(Duration.ofSeconds(30))
+            .callTimeout(Duration.ofSeconds(30))
+            .build()
     }
 
     fun getDevices() = DevicesResponse.json.from(get("devices").body!!.source())
 
-    fun getMeterStatus(deviceId: String) =
-        MeterStatusResponse.json.from(get("devices/${deviceId}/status").body!!.source())
+    fun getMeterStatus(deviceId: String) = MeterStatusResponse.json.from(get("devices/$deviceId/status").body!!.source())
 
-    fun getPlugMiniStatus(deviceId: String) =
-        PlugMiniStatusResponse.json.from(get("devices/${deviceId}/status").body!!.source())
+    fun getPlugMiniStatus(deviceId: String) = PlugMiniStatusResponse.json.from(get("devices/$deviceId/status").body!!.source())
 
-    fun getHub2Status(deviceId: String) =
-        Hub2StatusResponse.json.from(get("devices/${deviceId}/status").body!!.source())
+    fun getHub2Status(deviceId: String) = Hub2StatusResponse.json.from(get("devices/$deviceId/status").body!!.source())
 
     fun setupWebhook(url: String) =
         SetupWebhookResponse.json.from(
-            post("webhook/setupWebhook", SetupWebhookRequest(url = url).toJson()).body!!.source()
+            post("webhook/setupWebhook", SetupWebhookRequest(url = url).toJson()).body!!.source(),
         )
 
     fun deleteWebhook(url: String) =
         DeleteWebhookResponse.json.from(
-            post("webhook/deleteWebhook", DeleteWebhookRequest(url = url).toJson()).body!!.source()
+            post("webhook/deleteWebhook", DeleteWebhookRequest(url = url).toJson()).body!!.source(),
         )
 
     private fun buildRequest(endpoint: String): Request.Builder {
@@ -64,7 +64,8 @@ class SwitchBotClient(
         val mac = Mac.getInstance("HmacSHA256")
         mac.init(secretKeySpec)
         val signature = String(Base64.getEncoder().encode(mac.doFinal(data.toByteArray())))
-        return Request.Builder()
+        return Request
+            .Builder()
             .url("$endpointPrefix$endpoint")
             .header("Authorization", token)
             .header("sign", signature)
@@ -74,28 +75,39 @@ class SwitchBotClient(
 
     private fun getRequest(endpoint: String): Request = buildRequest(endpoint).get().build()
 
-    private fun postRequest(endpoint: String, body: String): Request = buildRequest(endpoint).post(
-        body.toRequestBody(
-            applicationJsonMediaType
-        )
-    ).build()
+    private fun postRequest(
+        endpoint: String,
+        body: String,
+    ): Request =
+        buildRequest(endpoint)
+            .post(
+                body.toRequestBody(
+                    applicationJsonMediaType,
+                ),
+            ).build()
 
     private fun get(endpoint: String): Response =
         retryUntilSuccessful("GET $endpoint") { httpClient.newCall(getRequest(endpoint)).execute() }
 
-    private fun post(endpoint: String, body: String): Response =
-        retryUntilSuccessful("POST $endpoint") { httpClient.newCall(postRequest(endpoint, body)).execute() }
+    private fun post(
+        endpoint: String,
+        body: String,
+    ): Response = retryUntilSuccessful("POST $endpoint") { httpClient.newCall(postRequest(endpoint, body)).execute() }
 
-    private fun retryUntilSuccessful(endpointMessage: String, process: () -> Response): Response {
+    private fun retryUntilSuccessful(
+        endpointMessage: String,
+        process: () -> Response,
+    ): Response {
         var retryInterval = retryBaseInterval
         var retries = 0
         while (true) {
-            val response = try {
-                process()
-            } catch (e: SocketTimeoutException) {
-                // Retry on network errors.
-                null
-            }
+            val response =
+                try {
+                    process()
+                } catch (e: SocketTimeoutException) {
+                    // Retry on network errors.
+                    null
+                }
             if (response != null && response.isSuccessful) {
                 if (retries > 0) {
                     logger.debug { "Successful response for $endpointMessage after $retries retries" }

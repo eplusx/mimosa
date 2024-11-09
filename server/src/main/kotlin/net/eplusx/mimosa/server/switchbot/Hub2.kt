@@ -19,14 +19,17 @@ data class Hub2(
     val lightLevel: Int,
 ) {
     fun getAttributes(): Attributes =
-        Attributes.builder().put("device_id", deviceId).put("device_name", deviceName).build()
+        Attributes
+            .builder()
+            .put("device_id", deviceId)
+            .put("device_name", deviceName)
+            .build()
 
     companion object {
-        fun isHub2(deviceType: String): Boolean {
-            return when (deviceType) {
+        fun isHub2(deviceType: String): Boolean =
+            when (deviceType) {
                 "Hub 2", "WoHub2" -> true
                 else -> false
             }
-        }
     }
 }

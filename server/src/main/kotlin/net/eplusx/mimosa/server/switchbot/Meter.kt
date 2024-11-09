@@ -19,14 +19,17 @@ data class Meter(
     val battery: Double,
 ) {
     fun getAttributes(): Attributes =
-        Attributes.builder().put("device_id", deviceId).put("device_name", deviceName).build()
+        Attributes
+            .builder()
+            .put("device_id", deviceId)
+            .put("device_name", deviceName)
+            .build()
 
     companion object {
-        fun isMeter(deviceType: String): Boolean {
-            return when (deviceType) {
+        fun isMeter(deviceType: String): Boolean =
+            when (deviceType) {
                 "Meter", "MeterPlus", "WoMeter", "WoMeterPlus" -> true
                 else -> false
             }
-        }
     }
 }

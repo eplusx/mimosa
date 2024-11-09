@@ -7,7 +7,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import okio.BufferedSource
 
-class DevicesResponse(list: List<Device>) : List<Device> by list {
+class DevicesResponse(
+    list: List<Device>,
+) : List<Device> by list {
     fun toJson(indent: String = "  "): String = adapter.indent(indent).toJson(this)
 
     companion object {

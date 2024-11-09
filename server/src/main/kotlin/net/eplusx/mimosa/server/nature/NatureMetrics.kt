@@ -36,8 +36,18 @@ class NatureMetrics(
 
     init {
         val devices = natureClient.getDevices()
-        temperatureMap = devices.filter { it.newestEvents?.get("te") != null }.associateBy { it.id }
-            .mapValues { DeviceTemperature(it.value.name, it.value.newestEvents!!["te"]!!.value.toDouble()) }
+        temperatureMap =
+            devices
+                .filter { it.newestEvents?.get("te") != null }
+                .associateBy { it.id }
+                .mapValues {
+                    DeviceTemperature(
+                        it.value.name,
+                        it.value.newestEvents!!["te"]!!
+                            .value
+                            .toDouble(),
+                    )
+                }
         registerMetrics()
     }
 
@@ -50,7 +60,11 @@ class NatureMetrics(
             for (entry in temperatureMap) {
                 it.record(
                     entry.value.temperature,
-                    Attributes.builder().put("device_id", entry.key).put("device_name", entry.value.deviceName).build()
+                    Attributes
+                        .builder()
+                        .put("device_id", entry.key)
+                        .put("device_name", entry.value.deviceName)
+                        .build(),
                 )
             }
         }

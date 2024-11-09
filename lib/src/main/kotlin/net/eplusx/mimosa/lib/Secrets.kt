@@ -15,7 +15,7 @@ object Secrets {
     }
 
     object Nature {
-        val accessToken: String by lazy { props.getProperty("nature.access-token")!!}
+        val accessToken: String by lazy { props.getProperty("nature.access-token")!! }
     }
 
     private val props: Properties by lazy {

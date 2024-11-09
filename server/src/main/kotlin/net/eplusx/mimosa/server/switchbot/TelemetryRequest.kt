@@ -35,12 +35,10 @@ data class TelemetryContext(
      * Timestamp of the event, in milliseconds since epoch.
      */
     val timeOfSample: Long,
-    // Common optional properties.
     /**
      * Battery level in percentage.
      */
     val battery: Int? = null,
-    // Meter properties.
     /**
      * Temperature reading. The unit is determined by [scale].
      */
@@ -53,17 +51,14 @@ data class TelemetryContext(
      * Temperature unit. Can be "CELSIUS" or "FAHRENHEIT".
      */
     val scale: String? = null,
-    // Hub 2 properties.
     /**
      * Light level, between 1 and 20.
      */
     val lightLevel: Int? = null,
-    // Plug properties.
     /**
      * Power state. Can be "ON" or "OFF".
      */
     val powerState: String? = null,
-    // Motion Sensor properties.
     /**
      * Detection state. Can be "DETECTED" or "NOT_DETECTED".
      */

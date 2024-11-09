@@ -19,24 +19,23 @@ data class PlugMini(
     val powerWatt: Double,
     val powerState: Boolean = true,
 ) {
-    fun powerOn(): PlugMini {
-        return copy(powerState = true)
-    }
+    fun powerOn(): PlugMini = copy(powerState = true)
 
-    fun powerOff(): PlugMini {
-        return copy(voltageVolt = 0.0, powerWatt = 0.0, powerState = false)
-    }
+    fun powerOff(): PlugMini = copy(voltageVolt = 0.0, powerWatt = 0.0, powerState = false)
 
     fun getAttributes(): Attributes =
-        Attributes.builder().put("device_id", deviceId).put("device_name", deviceName).build()
+        Attributes
+            .builder()
+            .put("device_id", deviceId)
+            .put("device_name", deviceName)
+            .build()
 
     companion object {
-        fun isPlug(deviceType: String): Boolean {
-            return when (deviceType) {
+        fun isPlug(deviceType: String): Boolean =
+            when (deviceType) {
                 "Plug Mini (JP)", "WoPlugJP", "Plug Mini (US)", "WoPlugUS" -> true
                 else -> false
             }
-        }
 
         fun guessPowerState(status: PlugMiniStatus): Boolean {
             // There is no way to know the power state from the status or other information available in SwitchBot API.

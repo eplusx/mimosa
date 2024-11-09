@@ -1,6 +1,7 @@
 plugins {
     id("mimosa.kotlin-application-conventions")
     id("com.github.johnrengelman.shadow")
+    id("org.jmailen.kotlinter")
 }
 
 group = "net.eplusx.mimosa"

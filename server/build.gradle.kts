@@ -5,6 +5,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.21"
 
     id("com.github.johnrengelman.shadow")
+    id("org.jmailen.kotlinter")
 }
 
 group = "net.eplusx.mimosa"

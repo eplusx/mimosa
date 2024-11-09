@@ -31,39 +31,51 @@ class SwitchBotMetrics(
         // TODO: Consider parallelizing requests to SwitchBot API. It takes ~2 seconds per device, which makes very long to start up the server.
         // TODO: Retry on failure.
         val devices = switchBotClient.getDevices().body.deviceList
-        meterMap = devices.filter { Meter.isMeter(it.deviceType) }.associateBy { it.deviceId }.mapValues {
-            logger.info { "Found Meter: ${it.value.deviceId} (${it.value.deviceName})" }
-            val meterStatus = switchBotClient.getMeterStatus(it.value.deviceId).body
-            Meter(
-                it.value.deviceId,
-                it.value.deviceName,
-                meterStatus.temperature,
-                0.01 * meterStatus.humidity,
-                0.01 * meterStatus.battery,
-            )
-        }.toMutableMap()
-        hub2Map = devices.filter { Hub2.isHub2(it.deviceType) }.associateBy { it.deviceId }.mapValues {
-            logger.info { "Found Hub2: ${it.value.deviceId} (${it.value.deviceName})" }
-            val hub2Status = switchBotClient.getHub2Status(it.value.deviceId).body
-            Hub2(
-                it.value.deviceId,
-                it.value.deviceName,
-                hub2Status.temperature,
-                0.01 * hub2Status.humidity,
-                hub2Status.lightLevel,
-            )
-        }.toMutableMap()
-        plugMiniMap = devices.filter { PlugMini.isPlug(it.deviceType) }.associateBy { it.deviceId }.mapValues {
-            logger.info { "Found Plug Mini: ${it.value.deviceId} (${it.value.deviceName})" }
-            val plugMiniStatus = switchBotClient.getPlugMiniStatus(it.value.deviceId).body
-            PlugMini(
-                it.value.deviceId,
-                it.value.deviceName,
-                plugMiniStatus.voltageVolt,
-                plugMiniStatus.powerWatt,
-                PlugMini.guessPowerState(plugMiniStatus),
-            )
-        }.toMutableMap()
+        meterMap =
+            devices
+                .filter { Meter.isMeter(it.deviceType) }
+                .associateBy { it.deviceId }
+                .mapValues {
+                    logger.info { "Found Meter: ${it.value.deviceId} (${it.value.deviceName})" }
+                    val meterStatus = switchBotClient.getMeterStatus(it.value.deviceId).body
+                    Meter(
+                        it.value.deviceId,
+                        it.value.deviceName,
+                        meterStatus.temperature,
+                        0.01 * meterStatus.humidity,
+                        0.01 * meterStatus.battery,
+                    )
+                }.toMutableMap()
+        hub2Map =
+            devices
+                .filter { Hub2.isHub2(it.deviceType) }
+                .associateBy { it.deviceId }
+                .mapValues {
+                    logger.info { "Found Hub2: ${it.value.deviceId} (${it.value.deviceName})" }
+                    val hub2Status = switchBotClient.getHub2Status(it.value.deviceId).body
+                    Hub2(
+                        it.value.deviceId,
+                        it.value.deviceName,
+                        hub2Status.temperature,
+                        0.01 * hub2Status.humidity,
+                        hub2Status.lightLevel,
+                    )
+                }.toMutableMap()
+        plugMiniMap =
+            devices
+                .filter { PlugMini.isPlug(it.deviceType) }
+                .associateBy { it.deviceId }
+                .mapValues {
+                    logger.info { "Found Plug Mini: ${it.value.deviceId} (${it.value.deviceName})" }
+                    val plugMiniStatus = switchBotClient.getPlugMiniStatus(it.value.deviceId).body
+                    PlugMini(
+                        it.value.deviceId,
+                        it.value.deviceName,
+                        plugMiniStatus.voltageVolt,
+                        plugMiniStatus.powerWatt,
+                        PlugMini.guessPowerState(plugMiniStatus),
+                    )
+                }.toMutableMap()
         registerMetrics()
     }
 
@@ -151,31 +163,48 @@ class SwitchBotMetrics(
         }
     }
 
-    private fun updateMeter(deviceId: String, temperature: Double, humidity: Double, battery: Double) {
+    private fun updateMeter(
+        deviceId: String,
+        temperature: Double,
+        humidity: Double,
+        battery: Double,
+    ) {
         metricsLock.withLock {
             val meter = meterMap[deviceId]
             if (meter == null) {
                 logger.warn { "Unknown device ID: $deviceId" }
                 return
             }
-            logger.info { "Meter update for $deviceId (${meter.deviceName}): temperature $temperature, humidity $humidity, battery $battery" }
+            logger.info {
+                "Meter update for $deviceId (${meter.deviceName}): temperature $temperature, humidity $humidity, battery $battery"
+            }
             meterMap[deviceId] = meter.copy(temperature = temperature, humidity = humidity, battery = battery)
         }
     }
 
-    private fun updateHub2(deviceId: String, temperature: Double, humidity: Double, lightLevel: Int) {
+    private fun updateHub2(
+        deviceId: String,
+        temperature: Double,
+        humidity: Double,
+        lightLevel: Int,
+    ) {
         metricsLock.withLock {
             val hub2 = hub2Map[deviceId]
             if (hub2 == null) {
                 logger.warn { "Unknown device ID: $deviceId" }
                 return
             }
-            logger.info { "Hub2 update for $deviceId (${hub2.deviceName}): temperature $temperature, humidity $humidity, lightLevel $lightLevel" }
+            logger.info {
+                "Hub2 update for $deviceId (${hub2.deviceName}): temperature $temperature, humidity $humidity, lightLevel $lightLevel"
+            }
             hub2Map[deviceId] = hub2.copy(temperature = temperature, humidity = humidity, lightLevel = lightLevel)
         }
     }
 
-    private fun updatePlugMini(deviceId: String, powerState: Boolean) {
+    private fun updatePlugMini(
+        deviceId: String,
+        powerState: Boolean,
+    ) {
         metricsLock.withLock {
             val plugMini = plugMiniMap[deviceId]
             if (plugMini == null) {
@@ -210,11 +239,12 @@ class SwitchBotMetrics(
                     if (plugMini.powerState) {
                         val plugMiniStatus = switchBotClient.getPlugMiniStatus(plugMini.deviceId).body
                         metricsLock.withLock {
-                            plugMiniMap[plugMini.deviceId] = plugMini.copy(
-                                voltageVolt = plugMiniStatus.voltageVolt,
-                                powerWatt = plugMiniStatus.powerWatt,
-                                // Never assume the plug mini is powered off; it might consume 0 watt even if it's on.
-                            )
+                            plugMiniMap[plugMini.deviceId] =
+                                plugMini.copy(
+                                    voltageVolt = plugMiniStatus.voltageVolt,
+                                    powerWatt = plugMiniStatus.powerWatt,
+                                    // Never assume the plug mini is powered off; it might consume 0 watt even if it's on.
+                                )
                         }
                     }
                 }
