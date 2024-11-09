@@ -23,9 +23,6 @@
 hs_err_pid*
 replay_pid*
 
-# IntelliJ project files
-*.iml
-
 # Ignore Gradle project-specific cache directory
 .gradle
 
