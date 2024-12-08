@@ -214,6 +214,54 @@ class SwitchBotClientTest :
             }
         }
 
+        context("getMeterPro2Co2Status") {
+            should("return meter value") {
+                server.enqueue(
+                    MockResponse().setBody(
+                        """
+                        {
+                            "statusCode": 100,
+                            "message": "success",
+                            "body": {
+                                "deviceId": "012345678900",
+                                "deviceType": "Meter",
+                                "hubDeviceId": "0123456789FF",
+                                "temperature": 25.5,
+                                "humidity": 61,
+                                "CO2": 1234,
+                                "battery": 77,
+                                "version": "V2.9"
+                            }
+                        }
+                        """.trimIndent(),
+                    ),
+                )
+                server.start()
+
+                SwitchBotClient(
+                    "access_token",
+                    "secret",
+                    server.url("/").toString(),
+                ).getMeterProCo2Status("012345678900") shouldBeEqualToComparingFields
+                    MeterProCo2StatusResponse(
+                        statusCode = 100,
+                        message = "success",
+                        body =
+                            MeterProCo2Status(
+                                deviceId = "012345678900",
+                                deviceType = "Meter",
+                                hubDeviceId = "0123456789FF",
+                                temperature = 25.5,
+                                humidity = 61,
+                                co2 = 1234,
+                                battery = 77,
+                                version = "V2.9",
+                            ),
+                    )
+                server.takeRequest().path shouldBe "/devices/012345678900/status"
+            }
+        }
+
         context("getPlugMiniStatus") {
             val typicalResponseJson =
                 """

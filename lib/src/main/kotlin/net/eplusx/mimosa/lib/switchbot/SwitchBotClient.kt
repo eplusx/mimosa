@@ -40,6 +40,9 @@ class SwitchBotClient(
 
     fun getMeterStatus(deviceId: String) = get("devices/$deviceId/status").use { MeterStatusResponse.json.from(it.body!!.source()) }
 
+    fun getMeterProCo2Status(deviceId: String) =
+        get("devices/$deviceId/status").use { MeterProCo2StatusResponse.json.from(it.body!!.source()) }
+
     fun getPlugMiniStatus(deviceId: String) = get("devices/$deviceId/status").use { PlugMiniStatusResponse.json.from(it.body!!.source()) }
 
     fun getHub2Status(deviceId: String) = get("devices/$deviceId/status").use { Hub2StatusResponse.json.from(it.body!!.source()) }

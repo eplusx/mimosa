@@ -16,6 +16,10 @@ fun main(args: Array<String>) {
                     require(args.size >= 3) { "Usage: mimosa-cli switchbot get-meter-status <device-id>" }
                     println(client.getMeterStatus(args[2]).toJson())
                 }
+                "get-meter-pro-co2-status" -> {
+                    require(args.size >= 3) { "Usage: mimosa-cli switchbot get-meter-pro-co2-status <device-id>" }
+                    println(client.getMeterProCo2Status(args[2]).toJson())
+                }
                 "get-plug-mini-status" -> {
                     require(args.size >= 3) { "Usage: mimosa-cli switchbot get-plug-mini-status <device-id>" }
                     println(client.getPlugMiniStatus(args[2]).toJson())

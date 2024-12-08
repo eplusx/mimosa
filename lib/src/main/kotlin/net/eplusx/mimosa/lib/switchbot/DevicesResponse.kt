@@ -28,7 +28,7 @@ data class Devices(
  * - Bot
  * - Curtain
  * - Hub, Hub Plus, Hub Mini, Hub 2
- * - Meter, Meter Plus, Outdoor Meter
+ * - Meter, Meter Plus, Outdoor Meter, Meter Pro CO2
  * - Remote
  * - Motion Sensor
  * - Contact Sensor

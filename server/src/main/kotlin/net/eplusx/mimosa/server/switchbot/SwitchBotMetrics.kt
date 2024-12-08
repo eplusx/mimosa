@@ -23,13 +23,13 @@ class SwitchBotMetrics(
         openTelemetry.meterBuilder("mimosa-switchbot").setInstrumentationVersion("0.1.0").build()
 
     private val meterMap: MutableMap<String, Meter>
+    private val meterProCo2Map: MutableMap<String, MeterProCo2>
     private val hub2Map: MutableMap<String, Hub2>
     private val plugMiniMap: MutableMap<String, PlugMini>
     private val metricsLock = ReentrantLock()
 
     init {
         // TODO: Consider parallelizing requests to SwitchBot API. It takes ~2 seconds per device, which makes very long to start up the server.
-        // TODO: Retry on failure.
         val devices = switchBotClient.getDevices().body.deviceList
         meterMap =
             devices
@@ -44,6 +44,22 @@ class SwitchBotMetrics(
                         meterStatus.temperature,
                         0.01 * meterStatus.humidity,
                         0.01 * meterStatus.battery,
+                    )
+                }.toMutableMap()
+        meterProCo2Map =
+            devices
+                .filter { MeterProCo2.isMeterProCo2(it.deviceType) }
+                .associateBy { it.deviceId }
+                .mapValues {
+                    logger.info { "Found Meter Pro CO2: ${it.value.deviceId} (${it.value.deviceName})" }
+                    val meterProCo2Status = switchBotClient.getMeterProCo2Status(it.value.deviceId).body
+                    MeterProCo2(
+                        it.value.deviceId,
+                        it.value.deviceName,
+                        meterProCo2Status.temperature,
+                        0.01 * meterProCo2Status.humidity,
+                        meterProCo2Status.co2,
+                        0.01 * meterProCo2Status.battery,
                     )
                 }.toMutableMap()
         hub2Map =
@@ -85,6 +101,9 @@ class SwitchBotMetrics(
                 for (meter in meterMap.values) {
                     it.record(meter.temperature, meter.getAttributes())
                 }
+                for (meterProCo2 in meterProCo2Map.values) {
+                    it.record(meterProCo2.temperature, meterProCo2.getAttributes())
+                }
                 for (hub2 in hub2Map.values) {
                     it.record(hub2.temperature, hub2.getAttributes())
                 }
@@ -95,28 +114,58 @@ class SwitchBotMetrics(
                 for (meter in meterMap.values) {
                     it.record(meter.humidity, meter.getAttributes())
                 }
+                for (meterProCo2 in meterProCo2Map.values) {
+                    it.record(meterProCo2.humidity, meterProCo2.getAttributes())
+                }
                 for (hub2 in hub2Map.values) {
                     it.record(hub2.humidity, hub2.getAttributes())
                 }
             }
         }
-        meter.gaugeBuilder("vapor_pressure_deficit").setDescription("Vapor pressure deficit").setUnit("kPa").buildWithCallback {
-            metricsLock.withLock {
-                for (meter in meterMap.values) {
-                    it.record(computeVaporPressureDeficit(meter.temperature, meter.humidity), meter.getAttributes())
-                }
-                for (hub2 in hub2Map.values) {
-                    it.record(computeVaporPressureDeficit(hub2.temperature, hub2.humidity), hub2.getAttributes())
+        meter
+            .gaugeBuilder("vapor_pressure_deficit")
+            .setDescription("Vapor pressure deficit")
+            .setUnit("kPa")
+            .buildWithCallback {
+                metricsLock.withLock {
+                    for (meter in meterMap.values) {
+                        it.record(computeVaporPressureDeficit(meter.temperature, meter.humidity), meter.getAttributes())
+                    }
+                    for (meterProCo2 in meterProCo2Map.values) {
+                        it.record(
+                            computeVaporPressureDeficit(meterProCo2.temperature, meterProCo2.humidity),
+                            meterProCo2.getAttributes(),
+                        )
+                    }
+                    for (hub2 in hub2Map.values) {
+                        it.record(computeVaporPressureDeficit(hub2.temperature, hub2.humidity), hub2.getAttributes())
+                    }
                 }
             }
-        }
-        meter.gaugeBuilder("volumetric_humidity").setDescription("Volumetric humidity").setUnit("gm3").buildWithCallback {
-            metricsLock.withLock {
-                for (meter in meterMap.values) {
-                    it.record(computeVolumetricHumidity(meter.temperature, meter.humidity), meter.getAttributes())
+        meter
+            .gaugeBuilder("volumetric_humidity")
+            .setDescription("Volumetric humidity")
+            .setUnit("gm3")
+            .buildWithCallback {
+                metricsLock.withLock {
+                    for (meter in meterMap.values) {
+                        it.record(computeVolumetricHumidity(meter.temperature, meter.humidity), meter.getAttributes())
+                    }
+                    for (meterProCo2 in meterProCo2Map.values) {
+                        it.record(
+                            computeVolumetricHumidity(meterProCo2.temperature, meterProCo2.humidity),
+                            meterProCo2.getAttributes(),
+                        )
+                    }
+                    for (hub2 in hub2Map.values) {
+                        it.record(computeVolumetricHumidity(hub2.temperature, hub2.humidity), hub2.getAttributes())
+                    }
                 }
-                for (hub2 in hub2Map.values) {
-                    it.record(computeVolumetricHumidity(hub2.temperature, hub2.humidity), hub2.getAttributes())
+            }
+        meter.gaugeBuilder("co2").ofLongs().setDescription("CO2 density").setUnit("ppm").buildWithCallback {
+            metricsLock.withLock {
+                for (meterProCo2 in meterProCo2Map.values) {
+                    it.record(meterProCo2.co2.toLong(), meterProCo2.getAttributes())
                 }
             }
         }
@@ -124,6 +173,9 @@ class SwitchBotMetrics(
             metricsLock.withLock {
                 for (meter in meterMap.values) {
                     it.record(meter.battery, meter.getAttributes())
+                }
+                for (meterProCo2 in meterProCo2Map.values) {
+                    it.record(meterProCo2.battery, meterProCo2.getAttributes())
                 }
             }
         }
@@ -154,6 +206,14 @@ class SwitchBotMetrics(
         val context = request.context
         if (Meter.isMeter(context.deviceType) && context.scale == "CELSIUS") {
             updateMeter(context.deviceMac, context.temperature!!, 0.01 * context.humidity!!, 0.01 * context.battery!!)
+        } else if (MeterProCo2.isMeterProCo2(context.deviceType) && context.scale == "CELSIUS") {
+            updateMeterPro2Co2(
+                context.deviceMac,
+                context.temperature!!,
+                0.01 * context.humidity!!,
+                context.co2!!,
+                0.01 * context.battery!!,
+            )
         } else if (Hub2.isHub2(context.deviceType) && context.scale == "CELSIUS") {
             updateHub2(context.deviceMac, context.temperature!!, 0.01 * context.humidity!!, context.lightLevel!!)
         } else if (PlugMini.isPlug(context.deviceType)) {
@@ -179,6 +239,27 @@ class SwitchBotMetrics(
                 "Meter update for $deviceId (${meter.deviceName}): temperature $temperature, humidity $humidity, battery $battery"
             }
             meterMap[deviceId] = meter.copy(temperature = temperature, humidity = humidity, battery = battery)
+        }
+    }
+
+    private fun updateMeterPro2Co2(
+        deviceId: String,
+        temperature: Double,
+        humidity: Double,
+        co2: Int,
+        battery: Double,
+    ) {
+        metricsLock.withLock {
+            val meterProCo2 = meterProCo2Map[deviceId]
+            if (meterProCo2 == null) {
+                logger.warn { "Unknown device ID: $deviceId" }
+                return
+            }
+            logger.info {
+                "Meter Pro CO2 update for $deviceId (${meterProCo2.deviceName}): temperature $temperature, humidity $humidity, CO2 $co2, battery $battery"
+            }
+            meterProCo2Map[deviceId] =
+                meterProCo2.copy(temperature = temperature, humidity = humidity, co2 = co2, battery = battery)
         }
     }
 
