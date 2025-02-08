@@ -28,7 +28,7 @@ data class Meter(
     companion object {
         fun isMeter(deviceType: String): Boolean =
             when (deviceType) {
-                "Meter", "MeterPlus", "WoMeter", "WoMeterPlus" -> true
+                "Meter", "MeterPlus", "WoMeter", "WoMeterPlus", "WoIOSensor" -> true
                 else -> false
             }
     }
